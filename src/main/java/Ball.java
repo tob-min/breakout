@@ -17,16 +17,20 @@ public class Ball {
 	private Random rand = new Random();
 
 	// constructor
-	public Ball() {
+	public Ball(int r, int v, double maxAngle) {
 
-		r = 7;
-		speed = 1;
-		maxAngle = PI / 5;
+		this.r = r;
+		speed = v;
+		this.maxAngle = maxAngle;
 		angle = rand.nextDouble(maxAngle, PI - maxAngle);
 		x = BreakoutGame.frameWidth / 2;
 		y = BreakoutGame.frameHeight - 60;
 
 		updateV();
+	}
+
+	public Ball() {
+		this(7, 1, Math.PI / 5);
 	}
 
 	// methods
