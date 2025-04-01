@@ -9,9 +9,7 @@ public class BreakoutGame extends JFrame {
 
 	private Screen screen = new Screen();
 
-	public static void main(String[] args) {
-		new BreakoutGame();
-	}
+
 
 	public BreakoutGame() {
 		setTitle("Breakout game");
