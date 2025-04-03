@@ -1,108 +1,139 @@
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.Random;
 
 public class Ball {
 
-	// variables
-	private double x;
-	private double y;
-	private int speed;
-	private int r;
-	private double dx;
-	private double dy;
-	private double angle;
-	private final double maxAngle; // greatest angle from horizontal that can be set
+    public static final double PI = Math.PI;
+    private final double maxAngle; // greatest angle from horizontal that can be set
+    // variables
+    private double x, y; // (0,0) top left corner
+    private int r;
+    private double dx; // right +ve
+    private double dy; // up +ve
+    private boolean alive;
 
-	public static final double PI = Math.PI;
-	private Random rand = new Random();
+    private Random rand = new Random();
 
-	// constructor
-	public Ball(int r, int v, double maxAngle) {
+    // constructor
+    public Ball(int r, int v, double maxAngle) {
 
-		this.r = r;
-		speed = v;
-		this.maxAngle = maxAngle;
-		angle = rand.nextDouble(maxAngle, PI - maxAngle);
-		x = BreakoutGame.frameWidth / 2;
-		y = BreakoutGame.frameHeight - 60;
+        this.r = r;
+        this.maxAngle = maxAngle;
 
-		updateV();
-	}
 
-	public Ball() {
-		this(7, 1, Math.PI / 5);
-	}
+        double speed = v;
+        double angle = rand.nextDouble(maxAngle, PI - maxAngle);
 
-	// methods
+        setV(angle, speed);
+        alive = true;
+        x = BreakoutGame.frameWidth / 2;
+        y = BreakoutGame.frameHeight - 60;
+    }
 
-	private void updateV() {
-		dx = speed * Math.cos(angle);
-		dy = speed * Math.sin(angle);
-	}
+    // methods
 
-	public void move() {
-		x += dx;
-		y -= dy;
-		if (x - r <= 0 && dx < 0 || x + r >= BreakoutGame.frameWidth && dx > 0) {
-			sideBounce();
-		} else if (y - r <= 0 && dy > 0 || y + r >= BreakoutGame.frameHeight && dy < 0) {
-			roofBounce();
-		}
-	}
+    public Ball() {
+        this(7, 1, Math.PI / 5);
+    }
 
-	public void sideBounce() {
-		dx = -dx;
-		angle = (PI - angle) % (2 * PI);
-	}
+    private void setV(double angle, double speed) {
+        dx = speed * Math.cos(angle);
+        dy = speed * Math.sin(angle);
+    }
 
-	public void roofBounce() {
-		dy = -dy;
-		angle = (2 * PI - angle) % (2 * PI);
-	}
+    private void setDirection(double angle) {
+        setV(angle, Math.sqrt(dx * dx + dy * dy));
+    }
 
-	public void paddleBounce(double ratio) {
-		angle = PI - maxAngle - ratio * (PI - 2 * maxAngle);
-		updateV();
-	}
+    public void move() {
+        x += dx;
+        y -= dy;
+        if (x - r <= 0 && dx < 0 || x + r >= BreakoutGame.frameWidth && dx > 0) {
+            sideBounce();
+        } else if (y - r <= 0 && dy > 0) {
+            roofBounce();
+        }
+    }
 
-	public boolean brickHit(int bx, int by, int width, int height) {
-		if (x - r <= bx + width && x + r >= bx && y - r <= by + height && y + r >= by) { // ball is touching brick
+    public void sideBounce() {
+        dx = -dx;
+    }
 
-			if (dx > 0 && bx - x > 0 && bx - x <= r || dx < 0 && bx + width - x < 0 && bx + width - x >= -r) {
-				sideBounce();
-			}
-			if (dy < 0 && by - y > 0 && by - y <= r || dy > 0 && by + height - y < 0 && by + height - y >= -r) {
-				roofBounce();
-			}
-			return true;
-		}
-		return false;
-	}
+    public void roofBounce() {
+        dy = -dy;
+    }
 
-	public void paintComponent(Graphics g) {
-		g.setColor(Color.CYAN);
-		g.fillOval((int) (x - r), (int) (y - (r)), 2 * r, 2 * r);
-	}
+    public boolean intersectsPlane(int px, int py, int width, int height) {
+        return x - r <= px + width && x + r >= px && y - r <= py + height && y + r >= py;
+    }
 
-	// getters
-	public double getX() {
-		return x;
-	}
+    public void checkCollisions(ArrayList<Brick> bricks, Paddle p, int deathHeight) {
+        if (y > deathHeight) {
+            alive = false;
+        } else {
+            checkPaddleCollision(p);
+            for (Brick b : bricks) {
+                checkBrickHit(b);
+            }
+        }
+    }
 
-	public double getY() {
-		return y;
-	}
+    public void checkPaddleCollision(Paddle paddle) {
+        if (intersectsPlane(paddle.getX(), paddle.getY(), paddle.getWidth(), 0)) {
+            paddleBounce((x - paddle.getX()) / paddle.getWidth());
+        }
+    }
 
-	public double getR() {
-		return r;
-	}
+    public void paddleBounce(double ratio) {
+        double angle = PI - maxAngle - ratio * (PI - 2 * maxAngle);
+        setDirection(angle);
+    }
 
-	public double getDx() {
-		return dx;
-	}
+    public void checkBrickHit(Brick b) {
+        int bx = b.getX();
+        int by = b.getY();
+        int width = b.getWidth();
+        int height = b.getHeight();
+        if (intersectsPlane(bx, by, width, height)) { // ball is touching brick
 
-	public double getDy() {
-		return dy;
-	}
+            if (dx > 0 && bx > x && bx <= x + r || dx < 0 && bx + width < x && bx + width >= x - r) {
+                sideBounce();
+            }
+            if (dy < 0 && by > y && by <= y + r || dy > 0 && by + height < y && by + height >= y - r) {
+                roofBounce();
+            }
+            b.hit();
+        }
+    }
 
+    public void paintComponent(Graphics g) {
+        g.setColor(Color.CYAN);
+        g.fillOval((int) (x - r), (int) (y - r), 2 * r, 2 * r);
+    }
+
+    // getters
+    public double getX() {
+        return x;
+    }
+
+    public double getY() {
+        return y;
+    }
+
+    public double getR() {
+        return r;
+    }
+
+    public double getDx() {
+        return dx;
+    }
+
+    public double getDy() {
+        return dy;
+    }
+
+    public boolean isAlive() {
+        return alive;
+    }
 }

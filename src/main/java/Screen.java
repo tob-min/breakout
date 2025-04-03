@@ -4,13 +4,17 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.io.Serial;
+import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.stream.Collectors;
 
 public class Screen extends JPanel implements KeyListener {
 
+	@Serial
 	private static final long serialVersionUID = 1L;
 
-	private LinkedList<Brick> bricks = new LinkedList<Brick>();
+	private ArrayList<Brick> bricks = new ArrayList<>();
 	private boolean left = false;
 	private boolean right = false;
 	private Paddle paddle;
@@ -57,27 +61,15 @@ public class Screen extends JPanel implements KeyListener {
 	}
 
 	public void checkCollision() {
+		ball.checkCollisions(bricks, paddle, paddle.getY() + 20);
+		cleanup();
+	}
 
-		// paddle collision
-		if (ball.getY() + ball.getR() >= paddle.getY() && ball.getY() <= paddle.getY()
-				&& ball.getX() + ball.getR() >= paddle.getX()
-				&& ball.getX() - ball.getR() <= paddle.getX() + paddle.getWidth()) {
-			ball.paddleBounce((ball.getX() - paddle.getX()) / paddle.getWidth());
-		} else if (ball.getY() > paddle.getY() + 4 * ball.getR()) { // life lost
+	private void cleanup() {
+		if (!ball.isAlive()) {
 			lifeLost();
-		} else {
-			LinkedList<Brick> remove = new LinkedList<Brick>();
-			for (Brick brick : bricks) {
-				if (ball.brickHit(brick.getX(), brick.getY(), brick.getWidth(), brick.getHeight())) {
-					if (brick.hit()) {
-						remove.add(brick);
-					}
-				}
-			}
-			for (Brick brick : remove) {
-				bricks.remove(brick);
-			}
 		}
+		bricks = bricks.stream().filter(Brick::isAlive).collect(Collectors.toCollection(ArrayList::new));
 	}
 
 	public void lifeLost() {
@@ -91,7 +83,6 @@ public class Screen extends JPanel implements KeyListener {
 
 		for (Brick brick : bricks) {
 			brick.paintComponent(g);
-
 		}
 	}
 

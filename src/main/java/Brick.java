@@ -3,6 +3,7 @@ import java.awt.*;
 public class Brick {
 
 	private int x, y, width, height;
+	private int health;
 	private Color colour;
 
 	public Brick(int x, int y, Color colour, int width, int height) {
@@ -11,6 +12,7 @@ public class Brick {
 		this.colour = colour;
 		this.width = width;
 		this.height = height;
+		health = 1;
 	}
 
 	public Brick(int x, int y, Color colour) {
@@ -24,6 +26,10 @@ public class Brick {
 	public void paintComponent(Graphics g) {
 		g.setColor(colour);
 		g.fillRoundRect(x, y, width, height, 10, 10);
+	}
+
+	public void hit() {
+		health--;
 	}
 	
 	public String toString() {
@@ -45,9 +51,6 @@ public class Brick {
 	public Color getColour() {
 		return colour;
 	}
-	
-	public boolean hit() {
-		return true;
-	}
+	public boolean isAlive() { return health > 0;}
 
 }
