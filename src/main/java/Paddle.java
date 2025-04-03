@@ -53,8 +53,4 @@ public class Paddle {
 		return width;
 	}
 
-	public void setMove(boolean b) {
-		canMove = b;
-	}
-
 }

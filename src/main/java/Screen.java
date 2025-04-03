@@ -1,12 +1,9 @@
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.Serial;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.stream.Collectors;
 
 public class Screen extends JPanel implements KeyListener {
@@ -41,22 +38,19 @@ public class Screen extends JPanel implements KeyListener {
 			}
 		}
 
-		timer = new Timer(15, new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				for (int i = 0; i < 5; i++) {
-					ball.move();
-					if (left) {
-						paddle.moveLeft();
-					}
-					if (right) {
-						paddle.moveRight();
-					}
-					checkCollision();
-				}
-				repaint();
-			}
-		});
+		timer = new Timer(15, _ -> {
+            for (int i = 0; i < 5; i++) {
+                ball.move();
+                if (left) {
+                    paddle.moveLeft();
+                }
+                if (right) {
+                    paddle.moveRight();
+                }
+                checkCollision();
+            }
+            repaint();
+        });
 		timer.start();
 	}
 

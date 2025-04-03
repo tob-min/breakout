@@ -48,9 +48,6 @@ public class Brick {
 	public int getHeight() {
 		return height;
 	}
-	public Color getColour() {
-		return colour;
-	}
 	public boolean isAlive() { return health > 0;}
 
 }
